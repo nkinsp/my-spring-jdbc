@@ -9,6 +9,8 @@ public interface BaseRepository<T> {
 	Query<T> createQuery();
 	
 	
+	
+	
 	default <R> R execute(DbOperation operation) {
 		try {
 			return operation.execute();

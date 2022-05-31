@@ -17,8 +17,6 @@ public @interface Like {
 
 	String value() default "";
 	
-	Class<?> convert() default DefaultConvert.class;
-	
 	boolean prefix() default true;
 	
 	boolean suffix() default true;

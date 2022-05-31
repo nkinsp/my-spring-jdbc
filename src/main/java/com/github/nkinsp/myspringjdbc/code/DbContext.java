@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +20,10 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.github.nkinsp.myspringjdbc.activerecord.Model;
+import com.github.nkinsp.myspringjdbc.code.repository.QueryRepository;
 import com.github.nkinsp.myspringjdbc.pk.PrimaryKeyGenerated;
 import com.github.nkinsp.myspringjdbc.pk.gen.DefaultPrimaryKeyGenerated;
+import com.github.nkinsp.myspringjdbc.query.CascadeEntityAdapter;
 import com.github.nkinsp.myspringjdbc.query.ConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.ConditionField;
 import com.github.nkinsp.myspringjdbc.query.ConditionQuery;
@@ -30,11 +33,14 @@ import com.github.nkinsp.myspringjdbc.query.conditions.GeConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.conditions.GtConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.conditions.InConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.conditions.LeConditionAdapter;
+import com.github.nkinsp.myspringjdbc.query.conditions.LikeConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.conditions.LtConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.conditions.NeConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.conditions.QueryConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.impl.DB2DialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.H2DialectQueryImpl;
+import com.github.nkinsp.myspringjdbc.query.impl.ManyToManyCascadeEntityAdapter;
+import com.github.nkinsp.myspringjdbc.query.impl.ManyToOneCascadeEntityAdapter;
 import com.github.nkinsp.myspringjdbc.query.impl.MySqlDialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.OracleDialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.PostgreDialectQueryImpl;
@@ -58,6 +64,8 @@ public class DbContext extends JdbcTemplate {
 	
 	private final List<ConditionAdapter<?>> conditionAdapters = new ArrayList<ConditionAdapter<?>>();
 	
+	private final List<CascadeEntityAdapter<?>> cascadeEntityAdapters = new ArrayList<CascadeEntityAdapter<?>>();
+	
 	
 	@SuppressWarnings("unchecked")
 	public synchronized <T> TableMapping<T> findTableMapping(Class<T> tableClass) {
@@ -80,6 +88,23 @@ public class DbContext extends JdbcTemplate {
 		}
 	}
 
+	public  <T,Id> QueryRepository<T, Id> table(Class<T> tableClass){
+		return new QueryRepository<T, Id>() {
+			@Override
+			public Query<T> createQuery() {
+				return DbContext.this.createQuery(tableClass);
+			}
+			
+
+			@Override
+			public DbContext getDbContext() {
+				// TODO Auto-generated method stub
+				return DbContext.this;
+			}
+			
+		};
+	}
+	
 
 	public boolean isShowSqlInfo() {
 		return showSqlInfo;
@@ -107,6 +132,7 @@ public class DbContext extends JdbcTemplate {
 		super(dataSource);
 		this.dialectClass = getDialectClass();
 		this.initConditionAdapter();
+		this.intCascadeEntityAdapters();
 		
 	}
 
@@ -166,6 +192,7 @@ public class DbContext extends JdbcTemplate {
 				new GtConditionAdapter(),
 				new GeConditionAdapter(),
 				new InConditionAdapter(),
+			    new LikeConditionAdapter(),
 				new QueryConditionAdapter() 
 		};
 		
@@ -176,12 +203,48 @@ public class DbContext extends JdbcTemplate {
 	}
 	
 	
+	private void intCascadeEntityAdapters() {
+
+		this.cascadeEntityAdapters.addAll(Arrays.asList(
+
+				new ManyToOneCascadeEntityAdapter(),
+				new ManyToManyCascadeEntityAdapter()
+
+		));
+
+	}
+	
+	
 	public void addConditionAdapter(ConditionAdapter<?> adapter) {
 		
 		this.conditionAdapters.add(adapter);
 	}
 	
 
+	public <T> List<T> executeCascadeEntityAdapter(List<T> data,Class<T> enClass ){
+			
+	   Collection<Field> fileds = ClassUtils.getClassFieldMap(enClass).values();
+	   
+		for (Field field : fileds) {
+			
+			Annotation[] annotations = field.getAnnotations();
+			for (Annotation an : annotations) {
+				
+				for (CascadeEntityAdapter<?> adapter: this.cascadeEntityAdapters) {
+					if(adapter.support(an.annotationType())) {
+						  adapter.adapter(data,enClass,field,an,this);
+					}
+					
+				}
+			}
+			
+		}
+
+		
+		return data;
+		
+	}
+	
 	public <T> void executeConditionAdapter(ConditionQuery conditionQuery, Query<T> query) {
 
 		Map<String, Field> fieldMap = ClassUtils.getClassFieldMap(conditionQuery.getClass());

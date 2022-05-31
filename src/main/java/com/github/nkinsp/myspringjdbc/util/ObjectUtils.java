@@ -1,7 +1,11 @@
 package com.github.nkinsp.myspringjdbc.util;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ObjectUtils {
 
@@ -36,4 +40,26 @@ public class ObjectUtils {
 		return false;
 		
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T,En>  List<T> getFieldValues(List<En> ens,String filedName){
+	
+		
+		return ens.stream().map(x->(T)getFieldValue(x, filedName)).filter(v->v != null).distinct().collect(Collectors.toList());
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <V,R>  R getFieldValue( V target,String filedName){
+		 PropertyDescriptor pd = ClassUtils.findPropertyDescriptor(filedName, target.getClass());
+			if(pd != null) {
+				try {
+					return (R)pd.getReadMethod().invoke(target);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return null;
+	}
+	
 }

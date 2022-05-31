@@ -24,19 +24,21 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.beans.BeanUtils;
+
 /**
  */
 @SuppressWarnings("rawtypes")
-public class CastUtils{
+public class ConvertUtils{
 
-    public static String castToString(Object value){
+    public static String convertToString(Object value){
         if(value == null){
             return null;
         }
         return value.toString();
     }
 
-    public static Byte castToByte(Object value){
+    public static Byte convertToByte(Object value){
         if(value == null){
             return null;
         }
@@ -55,7 +57,7 @@ public class CastUtils{
         throw new RuntimeException("can not cast to byte, value : " + value);
     }
 
-    public static Character castToChar(Object value){
+    public static Character convertToChar(Object value){
         if(value == null){
             return null;
         }
@@ -75,7 +77,7 @@ public class CastUtils{
         throw new RuntimeException("can not cast to char, value : " + value);
     }
 
-    public static Short castToShort(Object value){
+    public static Short convertToShort(Object value){
         if(value == null){
             return null;
         }
@@ -94,7 +96,7 @@ public class CastUtils{
         throw new RuntimeException("can not cast to short, value : " + value);
     }
 
-    public static BigDecimal castToBigDecimal(Object value){
+    public static BigDecimal convertToBigDecimal(Object value){
         if(value == null){
             return null;
         }
@@ -114,7 +116,7 @@ public class CastUtils{
         return new BigDecimal(strVal);
     }
 
-    public static BigInteger castToBigInteger(Object value){
+    public static BigInteger convertToBigInteger(Object value){
         if(value == null){
             return null;
         }
@@ -133,7 +135,7 @@ public class CastUtils{
         return new BigInteger(strVal);
     }
 
-    public static Float castToFloat(Object value){
+    public static Float convertToFloat(Object value){
         if(value == null){
             return null;
         }
@@ -155,7 +157,7 @@ public class CastUtils{
         throw new RuntimeException("can not cast to float, value : " + value);
     }
 
-    public static Double castToDouble(Object value){
+    public static Double convertToDouble(Object value){
         if(value == null){
             return null;
         }
@@ -177,11 +179,11 @@ public class CastUtils{
         throw new RuntimeException("can not cast to double, value : " + value);
     }
 
-    public static Date castToDate(Object value){
-        return castToDate(value, null);
+    public static Date convertToDate(Object value){
+        return convertToDate(value, null);
     }
 
-    public static Date castToDate(Object value, String format){
+    public static Date convertToDate(Object value, String format){
         if(value == null){
             return null;
         }
@@ -202,7 +204,7 @@ public class CastUtils{
         return new Date(longValue);
     }
 
-    public static java.sql.Date castToSqlDate(Object value){
+    public static java.sql.Date convertToSqlDate(Object value){
         if(value == null){
             return null;
         }
@@ -236,7 +238,7 @@ public class CastUtils{
         return new java.sql.Date(longValue);
     }
 
-    public static java.sql.Time castToSqlTime(Object value){
+    public static java.sql.Time convertToSqlTime(Object value){
         if(value == null){
             return null;
         }
@@ -269,7 +271,7 @@ public class CastUtils{
         return new java.sql.Time(longValue);
     }
 
-    public static java.sql.Timestamp castToTimestamp(Object value){
+    public static java.sql.Timestamp convertToTimestamp(Object value){
         if(value == null){
             return null;
         }
@@ -322,7 +324,7 @@ public class CastUtils{
         return true;
     }
 
-	public static Long castToLong(Object value){
+	public static Long convertToLong(Object value){
         if(value == null){
             return null;
         }
@@ -353,14 +355,14 @@ public class CastUtils{
                 Iterator iter = map.values().iterator();
                 iter.next();
                 Object value2 = iter.next();
-                return castToLong(value2);
+                return convertToLong(value2);
             }
         }
         throw new RuntimeException("can not cast to long, value : " + value);
     }
 
 
-	public static Integer castToInt(Object value){
+	public static Integer convertToInt(Object value){
         if(value == null){
             return null;
         }
@@ -393,20 +395,20 @@ public class CastUtils{
                 Iterator iter = map.values().iterator();
                 iter.next();
                 Object value2 = iter.next();
-                return castToInt(value2);
+                return convertToInt(value2);
             }
         }
         throw new RuntimeException("can not cast to int, value : " + value);
     }
 
-    public static byte[] castToBytes(Object value){
+    public static byte[] convertToBytes(Object value){
         if(value instanceof byte[]){
             return (byte[]) value;
         }
         throw new RuntimeException("can not cast to int, value : " + value);
     }
 
-    public static Boolean castToBoolean(Object value){
+    public static Boolean convertToBoolean(Object value){
         if(value == null){
             return null;
         }
@@ -445,7 +447,7 @@ public class CastUtils{
 
 
     @SuppressWarnings({"unchecked"})
-    public static <T> T cast(Object obj, Class<T> classType){
+    public static <T> T convertTo(Object obj, Class<T> classType){
         if(obj == null){
             if(classType == int.class){
                 return (T) Integer.valueOf(0);
@@ -496,63 +498,63 @@ public class CastUtils{
         }
 
         if(classType == boolean.class || classType == Boolean.class){
-            return (T) castToBoolean(obj);
+            return (T) convertToBoolean(obj);
         }
 
         if(classType == byte.class || classType == Byte.class){
-            return (T) castToByte(obj);
+            return (T) convertToByte(obj);
         }
 
         if(classType == char.class || classType == Character.class){
-            return (T) castToChar(obj);
+            return (T) convertToChar(obj);
         }
 
         if(classType == short.class || classType == Short.class){
-            return (T) castToShort(obj);
+            return (T) convertToShort(obj);
         }
 
         if(classType == int.class || classType == Integer.class){
-            return (T) castToInt(obj);
+            return (T) convertToInt(obj);
         }
 
         if(classType == long.class || classType == Long.class){
-            return (T) castToLong(obj);
+            return (T) convertToLong(obj);
         }
 
         if(classType == float.class || classType == Float.class){
-            return (T) castToFloat(obj);
+            return (T) convertToFloat(obj);
         }
 
         if(classType == double.class || classType == Double.class){
-            return (T) castToDouble(obj);
+            return (T) convertToDouble(obj);
         }
 
         if(classType == String.class){
-            return (T) castToString(obj);
+            return (T) convertToString(obj);
         }
 
         if(classType == BigDecimal.class){
-            return (T) castToBigDecimal(obj);
+            return (T) convertToBigDecimal(obj);
         }
 
         if(classType == BigInteger.class){
-            return (T) castToBigInteger(obj);
+            return (T) convertToBigInteger(obj);
         }
 
         if(classType == Date.class){
-            return (T) castToDate(obj);
+            return (T) convertToDate(obj);
         }
 
         if(classType == java.sql.Date.class){
-            return (T) castToSqlDate(obj);
+            return (T) convertToSqlDate(obj);
         }
 
         if(classType == java.sql.Time.class){
-            return (T) castToSqlTime(obj);
+            return (T) convertToSqlTime(obj);
         }
 
         if(classType == java.sql.Timestamp.class){
-            return (T) castToTimestamp(obj);
+            return (T) convertToTimestamp(obj);
         }
 
 
@@ -569,6 +571,17 @@ public class CastUtils{
             }
 
         }
+        
+        
+       if(!ObjectUtils.isEmpty(obj)) {
+    	   T newObj = BeanUtils.instantiate(classType);
+    	    BeanUtils.copyProperties(obj,  newObj);
+    	    return newObj;
+       }
+        
+     
+        
+        
         throw new RuntimeException("can not cast to : " + classType.getName());
     }
 

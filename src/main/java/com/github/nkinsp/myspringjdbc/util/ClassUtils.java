@@ -1,6 +1,7 @@
 package com.github.nkinsp.myspringjdbc.util;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -98,11 +99,18 @@ public class ClassUtils {
 		return dataMap.get(name);
 	}
 	
+	public static PropertyDescriptor findPropertyDescriptor(String name,Class<?> beanClass) {
+		
+		Map<String, PropertyDescriptor> map = getPropertyDescriptorsMap(beanClass);
+		
+		return map.get(name);
+	}
 	
-	public static synchronized Collection<PropertyDescriptor> getPropertyDescriptors(Class<?> beanClass) {
+	public static synchronized Map<String, PropertyDescriptor> getPropertyDescriptorsMap(Class<?> beanClass){
+		
 		Map<String, PropertyDescriptor> cachePdMap = pdCacheMap.get(beanClass.getName());
 		if (cachePdMap != null) {
-			return cachePdMap.values();
+			return cachePdMap;
 		}
 		
 		final Map<String, PropertyDescriptor> pdMap = new LinkedHashMap<String, PropertyDescriptor>();
@@ -116,7 +124,12 @@ public class ClassUtils {
 			return true;
 		});
 		pdCacheMap.put(beanClass.getName(), pdMap);
-		return pdMap.values();
+		return pdMap;
+	}
+	
+	public static synchronized Collection<PropertyDescriptor> getPropertyDescriptors(Class<?> beanClass) {
+		
+		return getPropertyDescriptorsMap(beanClass).values();
 
 	}
 	
@@ -126,6 +139,10 @@ public class ClassUtils {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} 
+	}
+	
+	public static boolean hasAnnotation(Class<?> targetClass,Class<? extends Annotation> anClass) {
+		return targetClass.getAnnotation(anClass) != null;
 	}
 	
 	

@@ -3,13 +3,12 @@ package com.github.nkinsp.myspringjdbc.code.operation;
 
 import com.github.nkinsp.myspringjdbc.query.Query;
 
-public class FindListByIdsDbOperation<T,En> extends FindBeanListDbOperation<T,Object> {
+public class FindListByIdsDbOperation<T,En> extends FindBeanListDbOperation<T,En> {
 
 	
 	
-	@SuppressWarnings("unchecked")
-	public FindListByIdsDbOperation(Query<T> query,Object[] ids) {
-		super(query,(Class<Object>) query.getTableMapping().getTableClass());
+	public FindListByIdsDbOperation(Query<T> query,Class<En> enClass,Object[] ids) {
+		super(query,enClass);
 		this.query.where().idIn(ids);
 		
 	}

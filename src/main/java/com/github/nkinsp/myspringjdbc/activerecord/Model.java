@@ -88,9 +88,6 @@ public class Model<M,Id> implements QueryRepository<M, Id>{
 	}
 
 
-	
-
-
 
 	
 	

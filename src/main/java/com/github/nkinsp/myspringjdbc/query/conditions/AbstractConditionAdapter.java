@@ -28,6 +28,7 @@ public abstract class AbstractConditionAdapter<A extends Annotation> implements 
 	
 	
 	
+	
 	public Object convert(Class<? extends QueryConvert<Object,Object>> converClass,Object value) {
 		
 		QueryConvert<Object,Object> convert = ClassUtils.newInstance(converClass);

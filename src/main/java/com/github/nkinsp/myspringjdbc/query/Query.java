@@ -215,7 +215,7 @@ public interface Query<T> extends CrudQuery<T>{
 	 * @return
 	 */
 	default Query<T> orderByDesc(String filter){
-		return orderBy(filter).condition("DESC");
+		return orderBy(filter).addFilter("DESC");
 	}
 	
 	/**
@@ -224,7 +224,7 @@ public interface Query<T> extends CrudQuery<T>{
 	 * @return
 	 */
 	default Query<T> orderByAsc(String orderBy){
-		return orderBy(orderBy).condition("ASC");
+		return orderBy(orderBy).addFilter("ASC");
 	}
 	
 	default Query<T> andThen(boolean eq,Consumer<Query<T>> query){

@@ -159,7 +159,7 @@ public  class AbstractSupportQueryImpl<T> implements Query<T>,QuerySqlBuilder<T>
 	@Override
 	public Query<T> setSql(String field, String value, Object... values) {
 		
-		ColumnField columnField = new ColumnField(tableMapping.getColumnName(field), value, ColumnFieldType.VALUE);
+		ColumnField columnField = new ColumnField(tableMapping.getColumnName(field), value, ColumnFieldType.SQL);
 		
 		columnField.getParams().addAll(Arrays.asList(values));
 		
@@ -232,13 +232,6 @@ public  class AbstractSupportQueryImpl<T> implements Query<T>,QuerySqlBuilder<T>
 		}
 		sql.append(" ");
 		//是否有逻辑删除
-		if(tableMapping.isLogicDelete()) {
-			
-			if(!this.conditions.isEmpty()) {
-				this.and();
-			}
-			this.eq(tableMapping.getLogicDeleteName(), 0);
-		}
 		if(!this.conditions.isEmpty()) {
 			sql.append("WHERE ");	
 		}

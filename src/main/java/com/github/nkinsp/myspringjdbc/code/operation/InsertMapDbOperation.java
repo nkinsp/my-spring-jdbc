@@ -16,7 +16,7 @@ import com.github.nkinsp.myspringjdbc.query.Query;
 import com.github.nkinsp.myspringjdbc.table.ColumnField;
 import com.github.nkinsp.myspringjdbc.table.ColumnFieldType;
 import com.github.nkinsp.myspringjdbc.table.IdType;
-import com.github.nkinsp.myspringjdbc.util.CastUtils;
+import com.github.nkinsp.myspringjdbc.util.ConvertUtils;
 
 
 public class InsertMapDbOperation<T> extends AbstractDbOperation<T>{
@@ -68,7 +68,7 @@ public class InsertMapDbOperation<T> extends AbstractDbOperation<T>{
 		}, keyHolder);
 
 		Number key = keyHolder.getKey();
-		return CastUtils.cast(key, tableMapping.getIdClassType());
+		return ConvertUtils.convertTo(key, tableMapping.getIdClassType());
 	}
 
 	@Override

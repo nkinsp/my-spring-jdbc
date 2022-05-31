@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.nkinsp.myspringjdbc.query.CrudQuery;
-import com.github.nkinsp.myspringjdbc.util.CastUtils;
+import com.github.nkinsp.myspringjdbc.util.ConvertUtils;
 
 
 
@@ -52,7 +52,7 @@ public abstract class MapModel<M,Id> extends Model<M, Id> implements Map<String,
 	
 	public <T> T get(String name,Class<T> typeClass) {
 		
-		return CastUtils.cast(get(name), typeClass);
+		return ConvertUtils.convertTo(get(name), typeClass);
 	}
 	
 	public Integer getToInteger(String name) {

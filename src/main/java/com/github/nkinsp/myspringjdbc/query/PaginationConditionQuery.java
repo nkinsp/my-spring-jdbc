@@ -1,6 +1,6 @@
 package com.github.nkinsp.myspringjdbc.query;
 
-public interface Pagination extends ConditionQuery {
+public interface PaginationConditionQuery extends ConditionQuery {
 
 	
 	Integer getPageNo();

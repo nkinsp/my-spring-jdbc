@@ -18,6 +18,7 @@ import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.ClassUtils;
 
 import com.github.nkinsp.myspringjdbc.activerecord.MapModel;
+import com.github.nkinsp.myspringjdbc.annotation.CascadeEntity;
 import com.github.nkinsp.myspringjdbc.annotation.Table;
 import com.github.nkinsp.myspringjdbc.query.Query;
 import com.github.nkinsp.myspringjdbc.table.Attribute;
@@ -73,7 +74,12 @@ public class FindBeanListDbOperation<T,En> extends AbstractDbOperation<T>{
 	@Override
 	public Object dbAdapter() {
 		
-		return findList();
+		 List<En> list = findList();
+		
+		 if(!com.github.nkinsp.myspringjdbc.util.ClassUtils.hasAnnotation(enClass, CascadeEntity.class)) {
+			 return list;
+		 }
+		 return context.executeCascadeEntityAdapter(list, enClass);
 		
 	}
 

@@ -70,7 +70,7 @@ public class UpdateEntityMapBatchDbOperation<T> extends UpdateEntityMapDbOperati
 		}).collect(Collectors.toList());
 
 		if (log.isInfoEnabled() && context.isShowSqlInfo()) {
-			log.info("==> execute batch [sql={} size={}]", sql, this.data.size());
+			log.info("==> execute batch [sql={}  size={} values={}]", sql, this.data.size(),this.data);
 		}
 
 		return context.batchUpdate(sql, new BatchPreparedStatementSetter() {

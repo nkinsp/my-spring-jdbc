@@ -1,7 +1,11 @@
 package com.github.nkinsp.myspringjdbc.code.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.util.CollectionUtils;
+
+import com.github.nkinsp.myspringjdbc.code.Rows;
 import com.github.nkinsp.myspringjdbc.code.operation.DeleteByIdDbOperation;
 import com.github.nkinsp.myspringjdbc.code.operation.DeleteByIdsDbOperation;
 import com.github.nkinsp.myspringjdbc.code.operation.FindBeanByIdDbOperation;
@@ -14,6 +18,7 @@ import com.github.nkinsp.myspringjdbc.code.operation.LogicDeleteByIdsDbOperation
 import com.github.nkinsp.myspringjdbc.code.operation.UpdateEntityBatchDbOperation;
 import com.github.nkinsp.myspringjdbc.code.operation.UpdateEntityDbOperation;
 import com.github.nkinsp.myspringjdbc.query.Query;
+
 
 
 public interface CrudReposotory<T,Id>  extends BaseRepository<T>{
@@ -35,8 +40,23 @@ public interface CrudReposotory<T,Id>  extends BaseRepository<T>{
 	 * @return
 	 */
 	default List<T> findList(List<Id> ids){
+			
+		return findList(ids, createQuery().getTableMapping().getTableClass());
+	
+	}
+	
+
+	default <En> List<En> findList(List<Id> ids,Class<En> enClass){
 		
-		return execute(new FindListByIdsDbOperation<>(createQuery(), ids.toArray()));
+		if(CollectionUtils.isEmpty(ids)) {
+			return new ArrayList<>();
+		}
+		
+		Query<T> query = createQuery();
+		List<En> results = execute(new FindListByIdsDbOperation<>(query,enClass, ids.toArray()));
+		
+		return results;
+		
 	}
 	
 	/**
@@ -60,6 +80,10 @@ public interface CrudReposotory<T,Id>  extends BaseRepository<T>{
 	 * @return 
 	 */
 	default void delete(List<Id> ids) {
+		
+		if(CollectionUtils.isEmpty(ids)) {
+			return;
+		}
 		
 		Query<T> query = createQuery();
 		
@@ -89,6 +113,10 @@ public interface CrudReposotory<T,Id>  extends BaseRepository<T>{
 	 * @param models
 	 */
 	default void saveBatch(List<T> models) {
+		
+		if(CollectionUtils.isEmpty(models)) {
+			return;
+		}
 	
 		execute(new InsertEntityBatchDbOperation<T>(createQuery(), models));
 	}
@@ -113,11 +141,16 @@ public interface CrudReposotory<T,Id>  extends BaseRepository<T>{
 		return execute(new InsertOrUpdateDbOperation<T>(createQuery(), model));
 	}
 	
+	
+	
 	/**
 	 * 批量更新
 	 * @param models
 	 */
 	default void updateBatch(List<T> models) {
+		if(CollectionUtils.isEmpty(models)) {
+			return;
+		}
 		execute(new UpdateEntityBatchDbOperation<T>(createQuery(), models));
 	}
 	
