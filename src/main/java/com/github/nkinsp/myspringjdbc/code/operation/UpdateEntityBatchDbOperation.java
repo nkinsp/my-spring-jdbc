@@ -9,7 +9,6 @@ public class UpdateEntityBatchDbOperation<T> extends UpdateEntityMapBatchDbOpera
 
 	public UpdateEntityBatchDbOperation(Query<T> query, List<T> data) {
 		super(query, EntityUtils.entityListToMapList(data));
-		// TODO Auto-generated constructor stub
 	}
 
 }

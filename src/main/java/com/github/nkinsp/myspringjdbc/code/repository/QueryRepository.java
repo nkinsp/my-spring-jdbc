@@ -1,10 +1,12 @@
 package com.github.nkinsp.myspringjdbc.code.repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import com.github.nkinsp.myspringjdbc.code.DbContext;
 import com.github.nkinsp.myspringjdbc.code.operation.FindBeanListDbOperation;
+import com.github.nkinsp.myspringjdbc.code.operation.FindMapListDbOperation;
 import com.github.nkinsp.myspringjdbc.code.operation.FindObjectDbOperation;
 import com.github.nkinsp.myspringjdbc.code.operation.PagingDbOperation;
 import com.github.nkinsp.myspringjdbc.code.operation.UpdateDbOperation;
@@ -244,6 +246,19 @@ public interface QueryRepository<T,Id> extends CrudReposotory<T,Id>{
 		return execute(new UpdateDbOperation<>(query));
 	}
 
+	/**
+	 * 返回map list
+	 * @param consumer
+	 * @return
+	 */
+	default List<Map<String,Object>>  findMapList(Consumer<Query<T>> consumer){
+		
+		Query<T> query = createQuery();
+		consumer.accept(query);
+		return execute(new FindMapListDbOperation<T>(query));
+		
+	}
+	
 	
 	/**
 	 * 获取DbContext

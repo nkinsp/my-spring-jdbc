@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 
+import com.github.nkinsp.myspringjdbc.cache.CacheManager;
 import com.github.nkinsp.myspringjdbc.query.Query;
 
 
@@ -54,7 +55,7 @@ public class UpdateEntityMapBatchDbOperation<T> extends UpdateEntityMapDbOperati
 	@Override
 	public Object dbAdapter() {
 
-		String sql = query.getSqlBuilder().buildUpdateSQL();
+		List<Object> ids = new ArrayList<Object>();
 
 		List<Object[]> paramsArrays = this.data.stream().map(map -> {
 
@@ -64,13 +65,28 @@ public class UpdateEntityMapBatchDbOperation<T> extends UpdateEntityMapDbOperati
 					param.add(en.getValue());
 				}
 			}
-			param.add(map.get(tableMapping.getPrimaryKey()));
-
+			Object id = map.get(tableMapping.getIdProperty().getFieldName());
+			param.add(id);
+			ids.add(id);
 			return param.toArray();
 		}).collect(Collectors.toList());
 
+		if (tableMapping.isCache()) {
+			CacheManager manager = context.getCacheManager();
+			if (manager != null) {
+
+				List<Object> keys = ids.stream()
+						.map(x -> manager.getCacheKeyGenerated().generated(tableMapping.getTableClass(), x))
+						.collect(Collectors.toList());
+				manager.delete(keys);
+
+			}
+		}
+
+		String sql = query.getSqlBuilder().buildUpdateSQL();
+
 		if (log.isInfoEnabled() && context.isShowSqlInfo()) {
-			log.info("==> execute batch [sql={}  size={} values={}]", sql, this.data.size(),this.data);
+			log.info("==> execute batch [sql={}  size={} values={}]", sql, this.data.size(), this.data);
 		}
 
 		return context.batchUpdate(sql, new BatchPreparedStatementSetter() {

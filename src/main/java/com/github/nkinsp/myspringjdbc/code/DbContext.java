@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.github.nkinsp.myspringjdbc.activerecord.Model;
+import com.github.nkinsp.myspringjdbc.cache.CacheManager;
 import com.github.nkinsp.myspringjdbc.code.repository.QueryRepository;
 import com.github.nkinsp.myspringjdbc.pk.PrimaryKeyGenerated;
 import com.github.nkinsp.myspringjdbc.pk.gen.DefaultPrimaryKeyGenerated;
@@ -56,11 +57,13 @@ public class DbContext extends JdbcTemplate {
 	private Class<?> dialectClass;
 	
 	private final Map<String, TableMapping<?>> tableMapping = new ConcurrentHashMap<>();
-	
-	
+
 	private PrimaryKeyGenerated primaryKeyGenerated = new DefaultPrimaryKeyGenerated();
 		
 	private boolean showSqlInfo = true;
+	
+	private CacheManager cacheManager;
+	
 	
 	private final List<ConditionAdapter<?>> conditionAdapters = new ArrayList<ConditionAdapter<?>>();
 	
@@ -126,10 +129,14 @@ public class DbContext extends JdbcTemplate {
 	}
 
 
-	
 	public DbContext(DataSource dataSource) {
+		this(dataSource, null);
+	}
+	
+	public DbContext(DataSource dataSource,CacheManager cacheManager) {
 	
 		super(dataSource);
+		this.cacheManager = cacheManager;
 		this.dialectClass = getDialectClass();
 		this.initConditionAdapter();
 		this.intCascadeEntityAdapters();
@@ -274,6 +281,16 @@ public class DbContext extends JdbcTemplate {
 
 		}
 
+	}
+
+
+	public CacheManager getCacheManager() {
+		return cacheManager;
+	}
+
+
+	public void setCacheManager(CacheManager cacheManager) {
+		this.cacheManager = cacheManager;
 	}
 	
 }

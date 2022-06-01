@@ -163,6 +163,10 @@ public interface Query<T> extends CrudQuery<T>{
 		return field(getTableMapping().getPrimaryKey()).in(values);
 	}
 	
+	default Query<T> in(){
+		return condition("IN");
+	}
+	
 	/**
 	 * in(...)
 	 * @param values
@@ -178,7 +182,7 @@ public interface Query<T> extends CrudQuery<T>{
 			builder.append("?");
 		}		
 		builder.append(")");
-		return condition("IN").condition(builder.toString()).addParams(values);
+		return in().condition(builder.toString()).addParams(values);
 	}
 	
 	/**
@@ -189,6 +193,16 @@ public interface Query<T> extends CrudQuery<T>{
 	 */
 	default Query<T> in(String field,Object...values){
 		return field(field).in(values);
+	}
+	
+	default  <E> Query<T> in(String field,Class<E> tableClass,Consumer<Query<E>> queryMapper){
+		
+		Query<E> query = getDbContext().createQuery(tableClass);
+		queryMapper.accept(query);
+		String selectSQL = query.getSqlBuilder().buildSelectSQL();
+		Object[] params = query.getParams().toArray();
+		return field(field).in().addCondition("( "+selectSQL+" )", params);
+		
 	}
 	
 	
