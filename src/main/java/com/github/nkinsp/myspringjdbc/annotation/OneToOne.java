@@ -14,7 +14,7 @@ import com.github.nkinsp.myspringjdbc.query.cascade.DefaultCascadeValueConvert;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-public @interface ManyToOne {
+public @interface OneToOne {
 
 	
 	Class<?> joinTableClass();

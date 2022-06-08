@@ -25,6 +25,10 @@ public interface Query<T> extends CrudQuery<T>{
 	Query<T> columns(String...cols);
 	
 	
+	default Query<T> select(String...cols){
+		return columns(cols);
+	}
+	
 	/**
 	 * 获取参数
 	 * @return

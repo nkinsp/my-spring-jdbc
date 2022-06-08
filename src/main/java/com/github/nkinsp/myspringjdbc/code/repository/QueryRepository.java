@@ -194,6 +194,8 @@ public interface QueryRepository<T,Id> extends CrudReposotory<T,Id>{
 		});
 	}
 	
+	
+	
 	/**
 	 * 条件分页查询
 	 * @param pageNo
@@ -206,6 +208,17 @@ public interface QueryRepository<T,Id> extends CrudReposotory<T,Id>{
 	
 		
 		return findList(pageNo,pageSize,enClass,query->{
+		      getDbContext().executeConditionAdapter(conditionQuery, query);
+		      conditionQuery.then(query);
+		});
+	}
+	
+	default <En> List<En> findListByConditions(Class<En> enClass,Consumer<Query<T>> consumer,ConditionQuery conditionQuery){
+		
+	
+		
+		return findList(enClass,query->{
+			  consumer.accept(query);
 		      getDbContext().executeConditionAdapter(conditionQuery, query);
 		      conditionQuery.then(query);
 		});

@@ -9,32 +9,33 @@ import java.util.stream.Collectors;
 
 import org.springframework.util.CollectionUtils;
 
-import com.github.nkinsp.myspringjdbc.annotation.ManyToOne;
+import com.github.nkinsp.myspringjdbc.annotation.OneToOne;
 import com.github.nkinsp.myspringjdbc.code.DbContext;
 import com.github.nkinsp.myspringjdbc.code.repository.QueryRepository;
 import com.github.nkinsp.myspringjdbc.query.CascadeEntityAdapter;
 import com.github.nkinsp.myspringjdbc.query.CascadeValueConvert;
+import com.github.nkinsp.myspringjdbc.table.TableMapping;
 import com.github.nkinsp.myspringjdbc.util.ClassUtils;
 import com.github.nkinsp.myspringjdbc.util.ObjectUtils;
 
-public class ManyToOneCascadeEntityAdapter implements CascadeEntityAdapter<ManyToOne>{
+public class OneToOneCascadeEntityAdapter implements CascadeEntityAdapter<OneToOne>{
 
 	
 	@Override
 	public boolean support(Class<? extends Annotation> annotationClass) {
 		// TODO Auto-generated method stub
-		return annotationClass.equals(ManyToOne.class);
+		return annotationClass.equals(OneToOne.class);
 	}
 
 	@Override
-	public <T> void adapter(List<T> data, Class<T> enClass, Field field, Annotation annotation,
+	public <T> void adapter(List<T> data, TableMapping<?> tableMapping,Class<T> enClass, Field field, Annotation annotation,
 			DbContext dbContext) {
 
 		if(CollectionUtils.isEmpty(data)) {
 			return;
 		}
 		
-		ManyToOne manyToOne = (ManyToOne) annotation;
+		OneToOne manyToOne = (OneToOne) annotation;
 
 		List<Object> fieldValues = ObjectUtils.getFieldValues(data, manyToOne.joinField()).stream().distinct().collect(Collectors.toList());
 		

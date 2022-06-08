@@ -41,8 +41,9 @@ import com.github.nkinsp.myspringjdbc.query.conditions.QueryConditionAdapter;
 import com.github.nkinsp.myspringjdbc.query.impl.DB2DialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.H2DialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.ManyToManyCascadeEntityAdapter;
-import com.github.nkinsp.myspringjdbc.query.impl.ManyToOneCascadeEntityAdapter;
+import com.github.nkinsp.myspringjdbc.query.impl.OneToOneCascadeEntityAdapter;
 import com.github.nkinsp.myspringjdbc.query.impl.MySqlDialectQueryImpl;
+import com.github.nkinsp.myspringjdbc.query.impl.OneToManyCascadeEntityAdapter;
 import com.github.nkinsp.myspringjdbc.query.impl.OracleDialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.PostgreDialectQueryImpl;
 import com.github.nkinsp.myspringjdbc.query.impl.SQLServerDialectQueryImpl;
@@ -214,8 +215,9 @@ public class DbContext extends JdbcTemplate {
 
 		this.cascadeEntityAdapters.addAll(Arrays.asList(
 
-				new ManyToOneCascadeEntityAdapter(),
-				new ManyToManyCascadeEntityAdapter()
+				new OneToOneCascadeEntityAdapter(),
+				new ManyToManyCascadeEntityAdapter(),
+				new OneToManyCascadeEntityAdapter()
 
 		));
 
@@ -228,7 +230,7 @@ public class DbContext extends JdbcTemplate {
 	}
 	
 
-	public <T> List<T> executeCascadeEntityAdapter(List<T> data,Class<T> enClass ){
+	public <T> List<T> executeCascadeEntityAdapter(List<T> data,TableMapping<?> tableMapping,Class<T> enClass ){
 			
 	   Collection<Field> fileds = ClassUtils.getClassFieldMap(enClass).values();
 	   
@@ -239,7 +241,7 @@ public class DbContext extends JdbcTemplate {
 				
 				for (CascadeEntityAdapter<?> adapter: this.cascadeEntityAdapters) {
 					if(adapter.support(an.annotationType())) {
-						  adapter.adapter(data,enClass,field,an,this);
+						  adapter.adapter(data,tableMapping,enClass,field,an,this);
 					}
 					
 				}

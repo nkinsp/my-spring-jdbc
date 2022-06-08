@@ -16,9 +16,7 @@ public @interface ManyToMany {
 	Class<?> joinTableClass();
 	
 	String joinField();
-	
-	String joinTableField();
-	
+		
    Class<? extends CascadeValueConvert> convert() default DefaultCascadeValueConvert.class;
   
 	

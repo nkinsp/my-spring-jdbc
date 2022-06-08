@@ -1,9 +1,11 @@
 package com.github.nkinsp.myspringjdbc.code.operation;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,14 +17,19 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.util.ClassUtils;
 
 import com.github.nkinsp.myspringjdbc.activerecord.MapModel;
 import com.github.nkinsp.myspringjdbc.annotation.CascadeEntity;
+import com.github.nkinsp.myspringjdbc.annotation.SelectColumnMapper;
+import com.github.nkinsp.myspringjdbc.annotation.SelectEntityMapping;
 import com.github.nkinsp.myspringjdbc.annotation.Table;
 import com.github.nkinsp.myspringjdbc.query.Query;
+import com.github.nkinsp.myspringjdbc.query.SelectColumnMapperRender;
+import com.github.nkinsp.myspringjdbc.query.select.DefaultSelectColumnMapperRender;
 import com.github.nkinsp.myspringjdbc.table.Attribute;
 import com.github.nkinsp.myspringjdbc.table.TableMapping;
+import com.github.nkinsp.myspringjdbc.util.ClassUtils;
+import com.github.nkinsp.myspringjdbc.util.StringUtils;
 
 
 
@@ -35,6 +42,9 @@ public class FindBeanListDbOperation<T,En> extends AbstractDbOperation<T>{
 		this.enClass = enClass;
 	}
 
+	
+	
+	
 	
 
 	
@@ -74,12 +84,41 @@ public class FindBeanListDbOperation<T,En> extends AbstractDbOperation<T>{
 	@Override
 	public Object dbAdapter() {
 		
+		
+		/**
+		 * 是否有查询字段映射
+		 */
+		if(ClassUtils.hasAnnotation(enClass, SelectEntityMapping.class)) {
+			
+			Collection<Field> values = ClassUtils.getClassFieldMap(enClass).values();
+			for (Field field : values) {
+				SelectColumnMapper mapper = field.getAnnotation(SelectColumnMapper.class);
+				if(mapper != null) {
+					String column = StringUtils.humpToLine(field.getName());
+					String value = mapper.value();
+					if(!StringUtils.isEmpty(value)) {
+						query.select(value+" as "+column);
+					}else {
+						query.select(column);
+					}
+					
+					Class<? extends SelectColumnMapperRender> render = mapper.render();
+					
+					if(!render.equals(DefaultSelectColumnMapperRender.class)) {
+						ClassUtils.newInstance(render).render(query);
+					}
+					continue;
+				}
+			}
+			
+		}
+		
 		 List<En> list = findList();
 		
-		 if(!com.github.nkinsp.myspringjdbc.util.ClassUtils.hasAnnotation(enClass, CascadeEntity.class)) {
+		 if(!ClassUtils.hasAnnotation(enClass, CascadeEntity.class)) {
 			 return list;
 		 }
-		 return context.executeCascadeEntityAdapter(list, enClass);
+		 return context.executeCascadeEntityAdapter(list, tableMapping,enClass);
 		
 	}
 
@@ -143,7 +182,7 @@ public class FindBeanListDbOperation<T,En> extends AbstractDbOperation<T>{
 					// TODO: handle exception
 					e.printStackTrace();
 					log.error("Mapping column '" + columnName + "' to property '" + pd.getName() +
-							"' of type '" + ClassUtils.getQualifiedName(pd.getPropertyType()) + " fail'");
+							"' of type '" +  org.springframework.util.ClassUtils.getQualifiedName(pd.getPropertyType()) + " fail'");
 				}
 			}
 			return mappedObject;

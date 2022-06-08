@@ -5,10 +5,11 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.github.nkinsp.myspringjdbc.code.DbContext;
+import com.github.nkinsp.myspringjdbc.table.TableMapping;
 
 public interface CascadeEntityAdapter<An> {
 
 	boolean support(Class<? extends Annotation> annotationClass);
 	
-	<T> void adapter(List<T> data,Class<T> enClass,Field field,Annotation an,DbContext dbContext);
+	<T> void adapter(List<T> data,TableMapping<?> tableMapping,Class<T> enClass,Field field,Annotation an,DbContext dbContext);
 }

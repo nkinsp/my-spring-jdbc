@@ -4,9 +4,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.util.CollectionUtils;
 
@@ -15,11 +18,29 @@ import com.github.nkinsp.myspringjdbc.code.DbContext;
 import com.github.nkinsp.myspringjdbc.code.repository.QueryRepository;
 import com.github.nkinsp.myspringjdbc.query.CascadeEntityAdapter;
 import com.github.nkinsp.myspringjdbc.query.CascadeValueConvert;
+import com.github.nkinsp.myspringjdbc.table.TableMapping;
 import com.github.nkinsp.myspringjdbc.util.ClassUtils;
 import com.github.nkinsp.myspringjdbc.util.ObjectUtils;
 
 public class ManyToManyCascadeEntityAdapter implements CascadeEntityAdapter<ManyToMany>{
 
+	
+	private Stream<Object> getObjectToStream(Object x){
+		
+		  if(x instanceof String) {
+			  return Stream.of(Arrays.asList(x.toString().split(",")).toArray());
+		  }
+		  if(x instanceof Collection) {
+			  return Stream.of(	((Collection<?>) x).toArray());
+		  }
+		  if(x.getClass().isArray()) {
+			  
+			  return Stream.of((Object[])x);
+			  
+		  }
+		  return Stream.of(x);
+		
+	}
 	
 	@Override
 	public boolean support(Class<? extends Annotation> annotationClass) {
@@ -28,57 +49,50 @@ public class ManyToManyCascadeEntityAdapter implements CascadeEntityAdapter<Many
 	}
 
 	@Override
-	public <T> void adapter(List<T> data, Class<T> enClass, Field field,Annotation annotation, DbContext dbContext) {
-		
-		if(CollectionUtils.isEmpty(data)) {
+	public <T> void adapter(List<T> data, TableMapping<?> tableMapping, Class<T> enClass, Field field,
+			Annotation annotation, DbContext dbContext) {
+
+		if (CollectionUtils.isEmpty(data)) {
 			return;
 		}
-		
+
 		ManyToMany manyToMany = (ManyToMany) annotation;
 
-		List<Object> fieldValues = ObjectUtils.getFieldValues(data, manyToMany.joinField()).stream().collect(Collectors.toList());
-		
-		if(CollectionUtils.isEmpty(fieldValues)) {
+		List<Object> fieldValues = ObjectUtils.getFieldValues(data, manyToMany.joinField()).stream()
+				.flatMap(x -> getObjectToStream(x)).distinct().collect(Collectors.toList());
+
+		if (CollectionUtils.isEmpty(fieldValues)) {
 			return;
 		}
-		
-		
-		QueryRepository<?,Object> repository =dbContext.table(manyToMany.joinTableClass());	
+
+		QueryRepository<?, Object> repository = dbContext.table(manyToMany.joinTableClass());
 		CascadeValueConvert convert = ClassUtils.newInstance(manyToMany.convert());
-		
-		
-		ParameterizedType type =(ParameterizedType) field.getGenericType();
+
+		ParameterizedType type = (ParameterizedType) field.getGenericType();
 		Class<?> convertType = (Class<?>) type.getActualTypeArguments()[0];
-		
-		
-		Map<Object, List<T>> dataMap = repository.findList(enClass, find->find.where().in(manyToMany.joinTableField(), fieldValues.toArray()))
-				.stream()
-				.collect(Collectors.groupingBy(x->ObjectUtils.getFieldValue(x, manyToMany.joinTableField())));
-		
-	
-		
-	    
+
+		String joinTableIdField = repository.createQuery().getTableMapping().getIdProperty().getFieldName();
+
+		Map<String, ?> dataMap = repository.findList(fieldValues).stream()
+				.collect(Collectors.toMap(x -> ObjectUtils.getFieldValue(x, joinTableIdField).toString(), v -> v));
+
 		PropertyDescriptor pd = ClassUtils.findPropertyDescriptor(field.getName(), enClass);
-		
-	
-		
-		data.forEach(x->{
-			
-		
-			Object value = ObjectUtils.getFieldValue(x, manyToMany.joinTableField());
-			
+
+		data.forEach(x -> {
+
+			Object value = ObjectUtils.getFieldValue(x, manyToMany.joinField());
 			try {
-				
-				List<?> values = dataMap.get(value).stream().map(v->convert.convert(v,convertType)).collect(Collectors.toList());
+
+				List<?> values = getObjectToStream(value).map(k->k.toString()).map(k -> dataMap.get(k)).filter(v -> !ObjectUtils.isEmpty(v))
+						.map(v -> convert.convert(v, convertType)).collect(Collectors.toList());
 				pd.getWriteMethod().invoke(x, values);
-			
+
 			} catch (Exception e) {
 				throw new RuntimeException(e);
-			} 
-			
+			}
+
 		});
-		
-		
+
 	}
 
 }
