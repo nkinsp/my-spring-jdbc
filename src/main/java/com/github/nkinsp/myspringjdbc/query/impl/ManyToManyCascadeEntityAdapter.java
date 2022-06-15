@@ -59,6 +59,7 @@ public class ManyToManyCascadeEntityAdapter implements CascadeEntityAdapter<Many
 		ManyToMany manyToMany = (ManyToMany) annotation;
 
 		List<Object> fieldValues = ObjectUtils.getFieldValues(data, manyToMany.joinField()).stream()
+				.filter(x->!ObjectUtils.isEmpty(x))
 				.flatMap(x -> getObjectToStream(x)).distinct().collect(Collectors.toList());
 
 		if (CollectionUtils.isEmpty(fieldValues)) {

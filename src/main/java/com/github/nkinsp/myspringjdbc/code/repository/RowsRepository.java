@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import com.github.nkinsp.myspringjdbc.code.Rows;
 import com.github.nkinsp.myspringjdbc.query.ConditionQuery;
+import com.github.nkinsp.myspringjdbc.query.Page;
 import com.github.nkinsp.myspringjdbc.query.PaginationConditionQuery;
 import com.github.nkinsp.myspringjdbc.query.Query;
 
@@ -35,6 +36,7 @@ public interface RowsRepository<T,Id> {
     default Rows<T> findRowsBy(PaginationConditionQuery query){
     	return findRowsBy( getTableClass(),query);
     }
+    
      
      Class<T> getTableClass();
 	

@@ -114,6 +114,7 @@ public class FindBeanListDbOperation<T,En> extends AbstractDbOperation<T>{
 		}
 		
 		 List<En> list = findList();
+	
 		
 		 if(!ClassUtils.hasAnnotation(enClass, CascadeEntity.class)) {
 			 return list;
