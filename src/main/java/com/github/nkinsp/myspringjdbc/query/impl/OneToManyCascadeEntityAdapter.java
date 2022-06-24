@@ -54,12 +54,11 @@ public class OneToManyCascadeEntityAdapter implements CascadeEntityAdapter<OneTo
 		@SuppressWarnings("unchecked")
 		Class<Object> convertType = (Class<Object>) type.getActualTypeArguments()[0];
 		
-	
 		
 		String joinTableField = manyToMany.joinTableField();
 		
 		
-		 Map<Object, List<Object>> dataMap = repository.findList( find->find.where().in(joinTableField, fieldValues.toArray()))
+		 Map<Object, List<Object>> dataMap = repository.findList(convertType, find->find.where().in(joinTableField, fieldValues.toArray()))
 				.stream()
 				.collect(Collectors.groupingBy(x->ObjectUtils.getFieldValue(x, joinTableField)));
 		
