@@ -11,7 +11,6 @@ import com.github.nkinsp.myspringjdbc.query.converts.DefaultConvert;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 public @interface Eq{
 
 	String value() default "";

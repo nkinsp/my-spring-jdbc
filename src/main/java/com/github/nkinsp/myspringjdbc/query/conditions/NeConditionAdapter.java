@@ -2,9 +2,10 @@ package com.github.nkinsp.myspringjdbc.query.conditions;
 
 import java.util.function.Consumer;
 
+import com.github.nkinsp.myspringjdbc.annotation.query.Ne;
 import com.github.nkinsp.myspringjdbc.query.Query;
 
-public class NeConditionAdapter extends AbstractConditionAdapter<com.github.nkinsp.myspringjdbc.annotation.query.Query>{
+public class NeConditionAdapter extends AbstractConditionAdapter<Ne>{
 
 	@Override
 	<T> Consumer<Query<T>> adapter(String name, Object value) {

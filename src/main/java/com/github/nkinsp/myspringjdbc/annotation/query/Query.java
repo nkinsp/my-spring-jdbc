@@ -9,10 +9,9 @@ import java.lang.annotation.Target;
 
 import com.github.nkinsp.myspringjdbc.query.converts.DefaultConvert;
 
-@Target({ElementType.FIELD,ElementType.TYPE})
+
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
 public @interface Query {
 
 	

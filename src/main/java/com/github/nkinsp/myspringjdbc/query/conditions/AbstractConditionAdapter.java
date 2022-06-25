@@ -45,6 +45,7 @@ public abstract class AbstractConditionAdapter<A extends Annotation> implements 
 		Class<? extends QueryConvert<Object,Object>> convertClass = field.getAnnotatioValue("convert");
 		Object value = convertClass != null?convert(convertClass, field.getValue()):field.getValue();		
 		String name = StringUtils.isEmpty(annotationValue)?StringUtils.humpToLine(field.getFieldName()):annotationValue;	
+	
 		return adapter(name, value);
 	}
 	

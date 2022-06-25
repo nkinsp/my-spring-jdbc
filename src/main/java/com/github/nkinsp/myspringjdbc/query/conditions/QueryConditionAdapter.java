@@ -8,6 +8,8 @@ public class QueryConditionAdapter extends AbstractConditionAdapter<com.github.n
 
 	@Override
 	<T> Consumer<Query<T>> adapter(String name, Object value) {
+		
+		System.out.println("name=>"+name+"  value=>"+value);
 		// TODO Auto-generated method stub
 		return x->{
 			x.addCondition(name, value);
