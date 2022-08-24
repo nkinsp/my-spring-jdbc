@@ -54,7 +54,7 @@ public class OneToOneCascadeEntityAdapter implements CascadeEntityAdapter<OneToO
 
 		CascadeValueConvert convert = ClassUtils.newInstance(manyToOne.convert());
 
-		Map<Object, Object> dataMap = repository.findList(fieldValues,field.getType()).stream().collect(Collectors
+		Map<Object, Object> dataMap = repository.findList(fieldValues).stream().collect(Collectors
 				.toMap(x -> ObjectUtils.getFieldValue(x, idFieldName), v -> convert.convert(v, field.getType())));
 
 		PropertyDescriptor pd = ClassUtils.findPropertyDescriptor(field.getName(), enClass);
