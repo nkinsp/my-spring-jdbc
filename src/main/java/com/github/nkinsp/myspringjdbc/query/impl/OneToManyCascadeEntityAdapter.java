@@ -28,64 +28,57 @@ public class OneToManyCascadeEntityAdapter implements CascadeEntityAdapter<OneTo
 	}
 
 	@Override
-	public <T> void adapter(List<T> data, TableMapping<?> tableMapping,Class<T> enClass, Field field, Annotation annotation, DbContext dbContext) {
-	
-		
-		if(CollectionUtils.isEmpty(data)) {
+	public <T> void adapter(List<T> data, TableMapping<?> tableMapping, Class<T> enClass, Field field,
+			Annotation annotation, DbContext dbContext) {
+
+		if (CollectionUtils.isEmpty(data)) {
 			return;
 		}
-		
+
 		OneToMany manyToMany = (OneToMany) annotation;
-		
+
 		String fieldName = tableMapping.getIdProperty().getFieldName();
 
 		List<Object> fieldValues = ObjectUtils.getFieldValues(data, fieldName).stream().collect(Collectors.toList());
-		
-		if(CollectionUtils.isEmpty(fieldValues)) {
+
+		if (CollectionUtils.isEmpty(fieldValues)) {
 			return;
 		}
-		
-		
-		QueryRepository<?,Object> repository =dbContext.table(manyToMany.joinTableClass());	
+
+		QueryRepository<?, Object> repository = dbContext.table(manyToMany.joinTableClass());
 		CascadeValueConvert convert = ClassUtils.newInstance(manyToMany.convert());
-		
-		
-		ParameterizedType type =(ParameterizedType) field.getGenericType();
+
+		ParameterizedType type = (ParameterizedType) field.getGenericType();
 		@SuppressWarnings("unchecked")
 		Class<Object> convertType = (Class<Object>) type.getActualTypeArguments()[0];
-		
-		
+
 		String joinTableField = manyToMany.joinTableField();
-		
-		
-		 Map<Object, List<Object>> dataMap = repository.findList(convertType, find->find.where().in(joinTableField, fieldValues.toArray()))
-				.stream()
-				.collect(Collectors.groupingBy(x->ObjectUtils.getFieldValue(x, joinTableField)));
-		
-	
-		
-	    
+
+		Map<Object, List<Object>> dataMap = repository
+				.findList(convertType, find -> find.where().in(joinTableField, fieldValues.toArray())).stream()
+				.collect(Collectors.groupingBy(x -> ObjectUtils.getFieldValue(x, joinTableField)));
+
 		PropertyDescriptor pd = ClassUtils.findPropertyDescriptor(field.getName(), enClass);
-		
-	
-		
-		data.forEach(x->{
-			
-		
+
+		data.forEach(x -> {
+
 			Object value = ObjectUtils.getFieldValue(x, fieldName);
-			
+
 			try {
-				
-				List<?> values = dataMap.get(value).stream().map(v->convert.convert(v,convertType)).collect(Collectors.toList());
-				pd.getWriteMethod().invoke(x, values);
-			
+
+				if (dataMap.containsKey(value)) {
+
+					List<?> values = dataMap.get(value).stream().map(v -> convert.convert(v, convertType))
+							.collect(Collectors.toList());
+					pd.getWriteMethod().invoke(x, values);
+				}
+
 			} catch (Exception e) {
 				throw new RuntimeException(e);
-			} 
-			
+			}
+
 		});
-		
-		
+
 	}
 
 }
