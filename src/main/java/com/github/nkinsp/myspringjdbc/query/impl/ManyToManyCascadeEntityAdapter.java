@@ -21,11 +21,16 @@ import com.github.nkinsp.myspringjdbc.query.CascadeValueConvert;
 import com.github.nkinsp.myspringjdbc.table.TableMapping;
 import com.github.nkinsp.myspringjdbc.util.ClassUtils;
 import com.github.nkinsp.myspringjdbc.util.ObjectUtils;
+import com.github.nkinsp.myspringjdbc.util.StringUtils;
 
 public class ManyToManyCascadeEntityAdapter implements CascadeEntityAdapter<ManyToMany>{
 
 	
 	private Stream<Object> getObjectToStream(Object x){
+		
+		if(StringUtils.isEmpty(x)) {
+			return Stream.of();
+		}
 		
 		  if(x instanceof String) {
 			  return Stream.of(Arrays.asList(x.toString().split(",")).toArray());
@@ -60,6 +65,7 @@ public class ManyToManyCascadeEntityAdapter implements CascadeEntityAdapter<Many
 
 		List<Object> fieldValues = ObjectUtils.getFieldValues(data, manyToMany.joinField()).stream()
 				.filter(x->!ObjectUtils.isEmpty(x))
+				.filter(x->!StringUtils.isEmpty(x))
 				.distinct()
 				.flatMap(x -> getObjectToStream(x)).distinct().collect(Collectors.toList());
 
@@ -73,16 +79,11 @@ public class ManyToManyCascadeEntityAdapter implements CascadeEntityAdapter<Many
 		ParameterizedType type = (ParameterizedType) field.getGenericType();
 		Class<?> convertType = (Class<?>) type.getActualTypeArguments()[0];
 		
-		System.out.println(fieldValues);
+	
 
 		String joinTableIdField = repository.createQuery().getTableMapping().getIdProperty().getFieldName();
-		System.out.println(joinTableIdField);
 		Map<String, ?> dataMap = repository.findList(fieldValues).stream()
-				.map(x->{
-					
-					System.out.println("id=>{}"+ ObjectUtils.getFieldValue(x, joinTableIdField).toString());
-					return x;
-				})
+			
 				.collect(Collectors.toMap(x -> ObjectUtils.getFieldValue(x, joinTableIdField).toString(), v -> v));
 
 		PropertyDescriptor pd = ClassUtils.findPropertyDescriptor(field.getName(), enClass);
