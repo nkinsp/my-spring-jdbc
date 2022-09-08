@@ -11,36 +11,46 @@ import java.util.stream.Stream;
 
 import org.springframework.util.CollectionUtils;
 
+import com.github.nkinsp.myspringjdbc.annotation.CascadeEntity;
 import com.github.nkinsp.myspringjdbc.cache.CacheKeyGenerated;
 import com.github.nkinsp.myspringjdbc.cache.CacheManager;
 import com.github.nkinsp.myspringjdbc.query.Query;
+import com.github.nkinsp.myspringjdbc.util.ClassUtils;
 import com.github.nkinsp.myspringjdbc.util.ObjectUtils;
 
-public class FindListByIdsDbOperation<T,En> extends FindBeanListDbOperation<T,En> {
+public class FindListByIdsDbOperation<T,En> extends FindBeanListDbOperation<T,T> {
 
 	
 	private Object[] ids;
 	
+	private Class<En> enClass;
+	
 	public FindListByIdsDbOperation(Query<T> query,Class<En> enClass,Object[] ids) {
-		super(query,enClass);
+		super(query,query.getTableMapping().getTableClass());
 		this.ids = ids;
+		this.enClass = enClass;
 		
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<En>  fromDb(Object[] ids) {
+	public List<T>  fromDb(Object[] ids) {
 		this.query.where().idIn(ids);
-		return (List<En>) super.dbAdapter();
-		
+		 List<T>  list =  (List<T>) super.dbAdapter();
+		 
+		 
+		 return list;
+		 
+		 
 		
 	}
 	
-	public Object fromCache(){
+	@SuppressWarnings("unchecked")
+	public List<T> fromCache(){
 		
 		CacheManager manager = context.getCacheManager();
 		
 		if(manager == null) {
-			return super.dbAdapter();
+			return fromDb(ids);
 		}
 		
 		CacheKeyGenerated keyGenerated = manager.getCacheKeyGenerated();
@@ -55,7 +65,7 @@ public class FindListByIdsDbOperation<T,En> extends FindBeanListDbOperation<T,En
 		
 		if(keys.size() == fromCacheValues.size()) {
 			
-			return fromCacheValues;
+			return (List<T>) fromCacheValues;
 		}
 		
 		List<Object> results = new ArrayList<Object>();
@@ -68,21 +78,35 @@ public class FindListByIdsDbOperation<T,En> extends FindBeanListDbOperation<T,En
 		List<Object> noCacheIds = Stream.of(ids).distinct().filter(x->!fromCahceKeySet.contains(x)).collect(Collectors.toList());
 		
 		if(!CollectionUtils.isEmpty(noCacheIds)) {
-			List<En> fromDbValues = fromDb(noCacheIds.toArray());
+			List<T> fromDbValues = fromDb(noCacheIds.toArray());
 			//添加缓存
 			Map<Object, Object> map = fromDbValues.stream().collect(Collectors.toMap(x->keyGenerated.generated(tableClass, tableMapping.getIdValue(x)), v->v));
 			manager.multiSet(map, tableMapping.getCacheTime(), TimeUnit.SECONDS);
 			results.addAll(fromDbValues);
 		}
+	
 		
-		return results;
+		
+		return (List<T>) results;
 		
 	}
 	
 	
 	@Override
 	public Object dbAdapter() {
-		return  tableMapping.isCache()?fromCache():fromDb(ids);
+		List<T> list = tableMapping.isCache() ? fromCache() : fromDb(ids);
+
+		if (enClass.equals(tableMapping.getTableClass())) {
+			return list;
+		}
+
+		List<En> result = list.stream().map(x -> ObjectUtils.copy(enClass, x)).collect(Collectors.toList());
+
+		if (!ClassUtils.hasAnnotation(enClass, CascadeEntity.class)) {
+			return list;
+		}
+		return context.executeCascadeEntityAdapter(result, tableMapping, enClass);
+
 	}
 
 	

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
+
 public class ObjectUtils {
 
 	
@@ -60,6 +62,13 @@ public class ObjectUtils {
 				}
 			}
 			return null;
+	}
+	
+	public static <T> T copy(Class<T> type,Object target) {
+		
+		 T bean = BeanUtils.instantiate(type);
+		 BeanUtils.copyProperties(target, bean);
+		 return bean;
 	}
 	
 }
