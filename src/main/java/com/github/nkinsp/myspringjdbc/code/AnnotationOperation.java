@@ -12,6 +12,6 @@ public interface AnnotationOperation {
 	
 	boolean match(Class<? extends Annotation> annotationClass);
 	
-	<R> R execute(Method method,DbContext context,TableMapping<?> table);
+	<R> R execute(Method method,DbContext context,TableMapping<?> table); 
 	
 }

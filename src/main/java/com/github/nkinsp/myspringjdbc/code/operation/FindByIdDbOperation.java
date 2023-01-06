@@ -37,10 +37,14 @@ public class FindByIdDbOperation<T,En> extends FindDbOperation<T, En>{
 		if(value != null) {
 			return value;
 		}
-		Object fromDb = super.dbAdapter();
-		manager.set(key, fromDb, tableMapping.getCacheTime(), TimeUnit.SECONDS);
-		
-		return fromDb;
+		//lock
+		synchronized (key.toString().intern()) {
+
+			Object fromDb = super.dbAdapter();
+			manager.set(key, fromDb, tableMapping.getCacheTime(), TimeUnit.SECONDS);
+
+			return fromDb;
+		}
 	}
 	
 
