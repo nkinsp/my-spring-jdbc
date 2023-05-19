@@ -195,6 +195,20 @@ public interface QueryRepository<T,Id> extends CrudReposotory<T,Id>{
 	}
 	
 	
+	default <En> En findObjectByConditions(Class<En> enClass,ConditionQuery conditionQuery){
+		
+	
+		
+		List<En> list = findList(enClass,query->{
+		      getDbContext().executeConditionAdapter(conditionQuery, query);
+		      conditionQuery.then(query);
+		});
+		
+		return list.get(0);
+		
+	}
+	
+	
 	
 	/**
 	 * 条件分页查询

@@ -3,11 +3,13 @@ package com.github.nkinsp.myspringjdbc.util;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+
 
 
 /**
@@ -83,7 +85,7 @@ public class ClassUtils {
 			}
 			return pd;
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return null;
 	}
@@ -117,6 +119,12 @@ public class ClassUtils {
 
 		forEachClassAllField(beanClass, field -> {
 
+			
+			if(Modifier.isStatic(field.getModifiers())) {
+				return true;
+			}
+			
+			
 			PropertyDescriptor pd = createPropertyDescriptor(beanClass, field.getName());
 			if (pd != null) {
 				pdMap.put(pd.getName(), pd);
