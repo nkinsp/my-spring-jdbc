@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.BeanUtils;
+
 
 
 
@@ -66,7 +68,7 @@ public class ConditionField {
 	private Object getFieldValue(Field field) {
 		
 		try {
-			 PropertyDescriptor pd = new PropertyDescriptor(field.getName(), target.getClass());
+			  PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(target.getClass(), field.getName());
 			 return pd.getReadMethod().invoke(target);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
