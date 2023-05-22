@@ -37,6 +37,18 @@ public interface RowsRepository<T,Id> {
     	return findRowsBy( getTableClass(),query);
     }
     
+    default <E> E findRowBy(Class<E> entityClas,ConditionQuery query) {
+    	
+    	Rows<E> rows = findRowsBy(entityClas, query);
+    	
+    	if(rows.isEmpty()) {
+    		return null;
+    	}
+    	
+    	return rows.get(0);
+    	
+    }
+    
      
      Class<T> getTableClass();
 	
