@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 import com.github.nkinsp.myspringjdbc.code.Rows;
 import com.github.nkinsp.myspringjdbc.query.ConditionQuery;
-import com.github.nkinsp.myspringjdbc.query.Page;
 import com.github.nkinsp.myspringjdbc.query.PaginationConditionQuery;
 import com.github.nkinsp.myspringjdbc.query.Query;
 
@@ -37,6 +36,7 @@ public interface RowsRepository<T,Id> {
     	return findRowsBy( getTableClass(),query);
     }
     
+
     default <E> E findRowBy(Class<E> entityClas,ConditionQuery query) {
     	
     	Rows<E> rows = findRowsBy(entityClas, query);
@@ -48,7 +48,7 @@ public interface RowsRepository<T,Id> {
     	return rows.get(0);
     	
     }
-    
+
      
      Class<T> getTableClass();
 	
