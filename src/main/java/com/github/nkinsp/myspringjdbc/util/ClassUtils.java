@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import org.springframework.beans.BeanUtils;
+
 
 
 /**
@@ -24,6 +26,8 @@ public class ClassUtils {
 	private static Map<String, Map<String, Field>> fieldCacheMap = new ConcurrentHashMap<>();
 	
 	private static Map<String, Class<?>> classCacheMap = new ConcurrentHashMap<String, Class<?>>();
+	
+	private static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<Class<?>, Object>();
 	
 	public static Class<?> forName(String name) {
 		Class<?> findClass = classCacheMap.get(name);
@@ -79,8 +83,8 @@ public class ClassUtils {
 	
 	public static PropertyDescriptor createPropertyDescriptor(Class<?> beanClass,String name) {
 		try {
-			PropertyDescriptor pd = new PropertyDescriptor(name, beanClass);
-			if(pd.getWriteMethod() == null && pd.getReadMethod() == null) {
+			PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(beanClass, name);
+			if(pd.getWriteMethod() == null || pd.getReadMethod() == null) {
 				return null;
 			}
 			return pd;
@@ -108,31 +112,32 @@ public class ClassUtils {
 		return map.get(name);
 	}
 	
-	public static synchronized Map<String, PropertyDescriptor> getPropertyDescriptorsMap(Class<?> beanClass){
-		
-		Map<String, PropertyDescriptor> cachePdMap = pdCacheMap.get(beanClass.getName());
-		if (cachePdMap != null) {
-			return cachePdMap;
-		}
-		
-		final Map<String, PropertyDescriptor> pdMap = new LinkedHashMap<String, PropertyDescriptor>();
+	public static Map<String, PropertyDescriptor> getPropertyDescriptorsMap(Class<?> beanClass) {
 
-		forEachClassAllField(beanClass, field -> {
+		synchronized (beanClass) {
 
-			
-			if(Modifier.isStatic(field.getModifiers())) {
+			Map<String, PropertyDescriptor> cachePdMap = pdCacheMap.get(beanClass.getName());
+			if (cachePdMap != null) {
+				return cachePdMap;
+			}
+
+			final Map<String, PropertyDescriptor> pdMap = new LinkedHashMap<String, PropertyDescriptor>();
+
+			forEachClassAllField(beanClass, field -> {
+
+				if (Modifier.isStatic(field.getModifiers())) {
+					return true;
+				}
+
+				PropertyDescriptor pd = createPropertyDescriptor(beanClass, field.getName());
+				if (pd != null) {
+					pdMap.put(pd.getName(), pd);
+				}
 				return true;
-			}
-			
-			
-			PropertyDescriptor pd = createPropertyDescriptor(beanClass, field.getName());
-			if (pd != null) {
-				pdMap.put(pd.getName(), pd);
-			}
-			return true;
-		});
-		pdCacheMap.put(beanClass.getName(), pdMap);
-		return pdMap;
+			});
+			pdCacheMap.put(beanClass.getName(), pdMap);
+			return pdMap;
+		}
 	}
 	
 	public static synchronized Collection<PropertyDescriptor> getPropertyDescriptors(Class<?> beanClass) {
@@ -142,12 +147,10 @@ public class ClassUtils {
 	}
 	
 	public static <T> T newInstance(Class<T> clasz) {
-		try {
-			return clasz.newInstance();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} 
+		return BeanUtils.instantiate(clasz);
 	}
+	
+	
 	
 	public static boolean hasAnnotation(Class<?> targetClass,Class<? extends Annotation> anClass) {
 		return targetClass.getAnnotation(anClass) != null;
