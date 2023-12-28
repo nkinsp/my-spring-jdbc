@@ -246,8 +246,10 @@ public interface QueryRepository<T,Id> extends CrudReposotory<T,Id>{
 	default Integer findCountByConditions(ConditionQuery conditionQuery) {
 		
 		return findCount(query->{
-			conditionQuery.then(query);
+		
 			getDbContext().executeConditionAdapter(conditionQuery, query);
+			
+			conditionQuery.then(query);
 			
 		});
 		
